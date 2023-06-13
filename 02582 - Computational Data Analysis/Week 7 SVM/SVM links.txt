@@ -1,0 +1,9 @@
+## svm why alpha for non support vector is zero
+https://stats.stackexchange.com/questions/355661/svm-why-alpha-for-non-support-vector-is-zero
+
+## Why dual problem
+https://stats.stackexchange.com/questions/19181/why-bother-with-the-dual-problem-when-fitting-svm
+
+
+## Optimering 
+https://towardsdatascience.com/optimization-stories-kkt-conditions-f86aea4fb6c2

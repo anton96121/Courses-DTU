@@ -1,0 +1,1052 @@
+%% Test problem, No step control
+c =[0 1/5 3/10 4/5 8/9 1 1]';
+A = [0 0 0 0 0 0 0 ;
+ 1/5 0 0 0 0 0 0
+ 3/40 9/40 0 0 0 0 0 ;
+ 44/45 -56/15 32/9 0 0 0 0 ;
+ 19372/6561 -25360/2187 64448/6561 -212/729 0 0 0;
+ 9017/3168 -355/33 46732/5247 49/176 -5103/18656 0 0;
+ 35/384 0 500/1113 125/192 -2187/6784 11/84 0];
+b = [35/384 0 500/1113 125/192 -2187/6784 11/84 0]';
+
+T = 10;
+x0 = 1;
+h = 1;
+t0 = 0;
+lambda = -1;
+t_a = t0:0.01:T;
+options = struct('step_control',false, 'initialStepSize', false);
+[x,t,function_calls2,hs2] = ODEsolver(@testEq,[lambda],h,t0,T,x0, "DOPRI54", options);
+
+
+x_true = exp(lambda*t);
+x_true_a = exp(lambda*t_a);
+local_error = exp(lambda*h)*x(1:end-1)-x(2:end) ;
+global_error = x_true'-x;
+
+% Top two plots
+fig1 = figure;
+pos_fig1 = [500 300 800 600];
+set(fig1,'Position',pos_fig1)
+
+tiledlayout(2,2)
+nexttile([1 2])
+plot(t,x,t_a,x_true_a)
+legend("Dormand-Prince 5(4)", "Analytical Solution",'FontSize',12,'Interpreter','latex')
+xlabel("t",'FontSize',14,'Interpreter','latex')
+ylabel("x(t)",'FontSize',14,'Interpreter','latex')
+title("Dormand-Prince 5(4)",'FontSize',16,'Interpreter','latex')
+
+nexttile
+plot(t(1:end-1),local_error, 'o',"color",	'#EDB120')
+hold on 
+plot(t_a,x0*(R(lambda,h,b,A).^(t_a/h)*exp(h*lambda)-R(lambda,h,b,A).^((t_a+h)/h)))
+legend("Emperical error", "Analytical error",'Location','southeast','FontSize',12,'Interpreter','latex')
+xlabel("t",'FontSize',14,'Interpreter','latex')
+ylabel("e(h)",'FontSize',14,'Interpreter','latex')
+title("Local truncation error",'FontSize',16,'Interpreter','latex')
+
+nexttile
+plot(t,global_error, 'o',"color", '#77AC30')
+hold on 
+plot(t_a,x0*(exp(t_a*lambda)-R(lambda,h,b,A).^((t_a)/h)))
+legend("Emperical error", "Analytical error",'Location','southeast','FontSize',12,'Interpreter','latex')
+xlabel("t",'FontSize',14,'Interpreter','latex')
+ylabel("E(h)",'FontSize',14,'Interpreter','latex')
+title("Global truncation error",'FontSize',16,'Interpreter','latex')
+
+
+%% Test problem, With step control
+c =[0 1/5 3/10 4/5 8/9 1 1]';
+A = [0 0 0 0 0 0 0 ;
+ 1/5 0 0 0 0 0 0
+ 3/40 9/40 0 0 0 0 0 ;
+ 44/45 -56/15 32/9 0 0 0 0 ;
+ 19372/6561 -25360/2187 64448/6561 -212/729 0 0 0;
+ 9017/3168 -355/33 46732/5247 49/176 -5103/18656 0 0;
+ 35/384 0 500/1113 125/192 -2187/6784 11/84 0];
+b = [35/384 0 500/1113 125/192 -2187/6784 11/84 0]';
+
+T = 10;
+x0 = 1;
+h = 1;
+t0 = 0;
+lambda = -1;
+t_a = t0:0.01:T;
+options = struct('step_control',false, 'initialStepSize', false, "control_type", "PID");
+[x,t,function_calls2,hs2] = ODEsolver(@testEq,[lambda],h,t0,T,x0, "DOPRI54", options);
+
+options = struct('step_control',true, 'initialStepSize', true, "control_type", "PID");
+[x2,t2,function_calls2,hs2] = ODEsolver(@testEq,[lambda],h,t0,T,x0, "DOPRI54", options);
+
+
+x_true = exp(lambda*t);
+x_true_a = exp(lambda*t_a);
+local_error = exp(lambda*h)*x(1:end-1)-x(2:end) ;
+global_error = x_true'-x;
+
+x_true = exp(lambda*t2);
+local_error2 = exp(lambda.*hs2(1,:)').*x2(1:end-1)-x2(2:end) ;
+global_error2 = x_true'-x2;
+
+% Top two plots
+fig1 = figure;
+pos_fig1 = [500 300 800 600];
+set(fig1,'Position',pos_fig1)
+
+tiledlayout(2,2)
+nexttile([1 2])
+plot(t,x,t2,x2,t_a,x_true_a)
+legend("Dormand-Prince 5(4), Without control", "Dormand-Prince 5(4), With control", "Analytical Solution",'FontSize',12,'Interpreter','latex')
+xlabel("t",'FontSize',14,'Interpreter','latex')
+ylabel("x(t)",'FontSize',14,'Interpreter','latex')
+title("Dormand-Prince 5(4)",'FontSize',16,'Interpreter','latex')
+
+nexttile
+semilogy(t(1:end-1),abs(local_error), 'o',"color",	'#EDB120','MarkerFaceColor','#EDB120')
+hold on 
+semilogy(t2(1:end-1),abs(local_error2), 'o',"color",	'#77AC30','MarkerFaceColor','#77AC30')
+legend("Without control", "With control",'FontSize',12,'Interpreter','latex', 'Location', 'southeast')
+xlabel("t",'FontSize',14,'Interpreter','latex')
+ylabel("$|e(h)|$",'FontSize',14,'Interpreter','latex')
+title("Local truncation error",'FontSize',16,'Interpreter','latex')
+
+nexttile
+semilogy(t(2:end),abs(global_error(2:end)), 'o',"color", '#EDB120','MarkerFaceColor','#EDB120')
+hold on 
+semilogy(t2(2:end),abs(global_error2(2:end)), 'o',"color", '#77AC30','MarkerFaceColor','#77AC30')
+legend("Without control", "With control",'FontSize',12,'Interpreter','latex', 'Location', 'southeast')
+xlabel("t",'FontSize',14,'Interpreter','latex')
+ylabel("$|E(h)|$",'FontSize',14,'Interpreter','latex')
+title("Global truncation error",'FontSize',16,'Interpreter','latex')
+
+
+%% Test problem, No step control
+c =[0 1/5 3/10 4/5 8/9 1 1]';
+A = [0 0 0 0 0 0 0 ;
+ 1/5 0 0 0 0 0 0
+ 3/40 9/40 0 0 0 0 0 ;
+ 44/45 -56/15 32/9 0 0 0 0 ;
+ 19372/6561 -25360/2187 64448/6561 -212/729 0 0 0;
+ 9017/3168 -355/33 46732/5247 49/176 -5103/18656 0 0;
+ 35/384 0 500/1113 125/192 -2187/6784 11/84 0];
+b = [35/384 0 500/1113 125/192 -2187/6784 11/84 0]';
+
+T = 1000;
+x0 = 1;
+border = 3.30656789263;
+h = border;
+t0 = 0;
+lambda = -1;
+t_a = t0:0.01:T;
+options = struct('step_control',false, 'initialStepSize', false, "control_type", "PID");
+[x,t,function_calls2,hs2] = ODEsolver(@testEq,[lambda],h,t0,T,x0, "DOPRI54", options);
+
+h = border-0.01;
+[x2,t2,function_calls2,hs2] = ODEsolver(@testEq,[lambda],h,t0,T,x0, "DOPRI54", options);
+
+h = border+0.001;
+[x3,t3,function_calls2,hs2] = ODEsolver(@testEq,[lambda],h,t0,T,x0, "DOPRI54", options);
+
+x_true = exp(lambda*t);
+x_true_a = exp(lambda*t_a);
+local_error = exp(lambda*h)*x(1:end-1)-x(2:end) ;
+global_error = x_true'-x;
+
+x_true = exp(lambda*t2);
+x_true_a = exp(lambda*t_a);
+local_error2 = exp(lambda*h)*x2(1:end-1)-x2(2:end) ;
+global_error2 = x_true'-x2;
+
+x_true = exp(lambda*t3);
+x_true_a = exp(lambda*t_a);
+local_error3 = exp(lambda*h)*x3(1:end-1)-x3(2:end) ;
+global_error3 = x_true'-x3;
+
+% Top two plots
+fig1 = figure;
+pos_fig1 = [500 300 800 600];
+set(fig1,'Position',pos_fig1)
+
+plot(t,x,t2,x2,t3,x3,t_a,x_true_a)
+legend("h=hlim","h=hlim-0.01","h=hlim+0.001", "Analytical Solution",'FontSize',12,'Interpreter','latex')
+xlabel("t",'FontSize',14,'Interpreter','latex')
+ylabel("x(t)",'FontSize',14,'Interpreter','latex')
+title("Dormand-Prince 5(4)",'FontSize',16,'Interpreter','latex')
+ylim([-0.3,3])
+xlim([-50,T])
+
+
+%% MU = 3, fixed step size
+h = 0.1;
+t0 = 0;
+mu = 3;
+tend = 4*mu;
+x0 = [1.0; 1.0];
+
+% using the Dormand-Prince 5(4)method
+options = struct('step_control',false, 'initialStepSize', false);
+[X1,T1,function_calls1,hs1,rs1] = ODEsolver(@VanPol,[mu],h,t0,tend,x0, "DOPRI54",options);
+function_calls111 = function_calls1;
+hs111 = hs1;
+rs111 = rs1;
+
+h = 0.01;
+% using the Dormand-Prince 5(4)method
+options = struct('step_control',false, 'initialStepSize', false);
+[X2,T2,function_calls2,hs2,rs2] = ODEsolver(@VanPol,[mu],h,t0,tend,x0, "DOPRI54",options);
+function_calls22 = function_calls2;
+hs22 = hs2;
+rs22 = rs2;
+
+h = 0.001;
+% using the Dormand-Prince 5(4)method
+options = struct('step_control',false, 'initialStepSize', false);
+[X3,T3,function_calls3,hs3,rs3] = ODEsolver(@VanPol,[mu],h,t0,tend,x0, "DOPRI54",options);
+function_calls33 = function_calls3;
+hs33 = hs3;
+rs33 = rs3;
+
+options = odeset('RelTol',0.000001,'AbsTol',0.000001);
+[Tode45,Xode45] = ode45(@VanPol,[t0 tend],x0,options,mu);
+
+[Tode15s,Xode15s]=ode15s(@VanPol,[t0 tend],x0,options,mu);
+
+%
+fig = figure;
+
+subplot(3, 3, 1)
+plot(T1,X1(:,1),'LineWidth', 1.5)
+hold on 
+plot(Tode45,Xode45(:,1), '-.','LineWidth', 1.5)
+plot(Tode15s,Xode15s(:,1), '--','LineWidth', 1.5)
+title('h = 0.1','FontSize',16,'Interpreter','latex')
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("$x_1$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 2)
+plot(T2,X2(:,1),'LineWidth', 1.5)
+hold on 
+plot(Tode45,Xode45(:,1), '-.','LineWidth', 1.5)
+plot(Tode15s,Xode15s(:,1), '--','LineWidth', 1.5)
+title('h = 0.01','FontSize',16,'Interpreter','latex')
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("$x_1$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 3)
+plot(T3,X3(:,1),'LineWidth', 1.5)
+hold on 
+plot(Tode45,Xode45(:,1), '-.','LineWidth', 1.5)
+plot(Tode15s,Xode15s(:,1), '--','LineWidth', 1.5)
+title('h = 0.001','FontSize',16,'Interpreter','latex')
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("$x_1$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 4)
+plot(T1,X1(:,2),'LineWidth', 1.5)
+hold on 
+plot(Tode45,Xode45(:,2), '-.','LineWidth', 1.5)
+plot(Tode15s,Xode15s(:,2), '--','LineWidth', 1.5)
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("$x_2$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 5)
+plot(T2,X2(:,2),'LineWidth', 1.5)
+hold on 
+plot(Tode45,Xode45(:,2), '-.','LineWidth', 1.5)
+plot(Tode15s,Xode15s(:,2), '--','LineWidth', 1.5)
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("$x_2$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 6)
+plot(T3,X3(:,2),'LineWidth', 1.5)
+hold on 
+plot(Tode45,Xode45(:,2), '-.','LineWidth', 1.5)
+plot(Tode15s,Xode15s(:,2), '--','LineWidth', 1.5)
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("$x_2$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 7)
+plot(X1(:,1),X1(:,2),'LineWidth', 1.5)
+hold on 
+plot(Xode45(:,1),Xode45(:,2), '-.','LineWidth', 1.5)
+plot(Xode15s(:,1),Xode15s(:,2), '--','LineWidth', 1.5)
+xlabel("$x_1$",'FontSize',16,'Interpreter','latex')
+ylabel("$x_2$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 8)
+plot(X2(:,1),X2(:,2),'LineWidth', 1.5)
+hold on 
+plot(Xode45(:,1),Xode45(:,2), '-.','LineWidth', 1.5)
+plot(Xode15s(:,1),Xode15s(:,2), '--','LineWidth', 1.5)
+xlabel("$x_1$",'FontSize',16,'Interpreter','latex')
+ylabel("$x_2$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 9)
+plot(X3(:,1),X3(:,2),'LineWidth', 1.5)
+hold on 
+plot(Xode45(:,1),Xode45(:,2), '-.','LineWidth', 1.5)
+plot(Xode15s(:,1),Xode15s(:,2), '--','LineWidth', 1.5)
+xlabel("$x_1$",'FontSize',16,'Interpreter','latex')
+ylabel("$x_2$",'FontSize',16,'Interpreter','latex')
+
+
+sgtitle('Dormand-Prince 5(4) with fixed step size, $\mu = 3$','Interpreter','latex','FontSize',20) 
+ 
+
+% add a bit space to the figure
+fig = gcf;
+%fig.Position(3) = fig.Position(3) + 250;
+% add legend
+Lgnd = legend('show');
+Lgnd.Position(1) = 0.449;
+Lgnd.Position(2) = -0.02;
+legend("Dormand-Prince 5(4)","ode45","ode15s",'NumColumns',3,'FontSize',16,'Interpreter','latex');
+%% MU = 20, fixed step size
+h = 0.1;
+t0 = 0;
+mu = 20;
+tend = 4*mu;
+x0 = [1.0; 1.0];
+
+% using the Dormand-Prince 5(4)method
+options = struct('step_control',false, 'initialStepSize', false);
+[X1,T1,function_calls4,hs1,rs4] = ODEsolver(@VanPol,[mu],h,t0,tend,x0, "DOPRI54",options);
+hs4 = hs1;
+h = 0.01;
+% using the Dormand-Prince 5(4)method
+options = struct('step_control',false, 'initialStepSize', false);
+[X2,T2,function_calls5,hs2,rs5] = ODEsolver(@VanPol,[mu],h,t0,tend,x0, "DOPRI54",options);
+hs5 = hs2;
+
+h = 0.001;
+% using the Dormand-Prince 5(4)method
+options = struct('step_control',false, 'initialStepSize', false);
+[X3,T3,function_calls6,hs3,rs6] = ODEsolver(@VanPol,[mu],h,t0,tend,x0, "DOPRI54",options);
+hs6 = hs3;
+
+options = odeset('RelTol',0.000001,'AbsTol',0.000001);
+[Tode45,Xode45] = ode45(@VanPol,[t0 tend],x0,options,mu);
+
+[Tode15s,Xode15s]=ode15s(@VanPol,[t0 tend],x0,options,mu);
+
+%
+fig = figure;
+
+subplot(3, 3, 1)
+plot(T1,X1(:,1),'LineWidth', 1.5)
+hold on 
+plot(Tode45,Xode45(:,1), '-.','LineWidth', 1.5)
+plot(Tode15s,Xode15s(:,1), '--','LineWidth', 1.5)
+title('h = 0.1','FontSize',16,'Interpreter','latex')
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("$x_1$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 2)
+plot(T2,X2(:,1),'LineWidth', 1.5)
+hold on 
+plot(Tode45,Xode45(:,1), '-.','LineWidth', 1.5)
+plot(Tode15s,Xode15s(:,1), '--','LineWidth', 1.5)
+title('h = 0.01','FontSize',16,'Interpreter','latex')
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("$x_1$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 3)
+plot(T3,X3(:,1),'LineWidth', 1.5)
+hold on 
+plot(Tode45,Xode45(:,1), '-.','LineWidth', 1.5)
+plot(Tode15s,Xode15s(:,1), '--','LineWidth', 1.5)
+title('h = 0.001','FontSize',16,'Interpreter','latex')
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("$x_1$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 4)
+plot(T1,X1(:,2),'LineWidth', 1.5)
+hold on 
+plot(Tode45,Xode45(:,2), '-.','LineWidth', 1.5)
+plot(Tode15s,Xode15s(:,2), '--','LineWidth', 1.5)
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("$x_2$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 5)
+plot(T2,X2(:,2),'LineWidth', 1.5)
+hold on 
+plot(Tode45,Xode45(:,2), '-.','LineWidth', 1.5)
+plot(Tode15s,Xode15s(:,2), '--','LineWidth', 1.5)
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("$x_2$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 6)
+plot(T3,X3(:,2),'LineWidth', 1.5)
+hold on 
+plot(Tode45,Xode45(:,2), '-.','LineWidth', 1.5)
+plot(Tode15s,Xode15s(:,2), '--','LineWidth', 1.5)
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("$x_2$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 7)
+plot(X1(:,1),X1(:,2),'LineWidth', 1.5)
+hold on 
+plot(Xode45(:,1),Xode45(:,2), '-.','LineWidth', 1.5)
+plot(Xode15s(:,1),Xode15s(:,2), '--','LineWidth', 1.5)
+xlabel("$x_1$",'FontSize',16,'Interpreter','latex')
+ylabel("$x_2$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 8)
+plot(X2(:,1),X2(:,2),'LineWidth', 1.5)
+hold on 
+plot(Xode45(:,1),Xode45(:,2), '-.','LineWidth', 1.5)
+plot(Xode15s(:,1),Xode15s(:,2), '--','LineWidth', 1.5)
+xlabel("$x_1$",'FontSize',16,'Interpreter','latex')
+ylabel("$x_2$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 9)
+plot(X3(:,1),X3(:,2),'LineWidth', 1.5)
+hold on 
+plot(Xode45(:,1),Xode45(:,2), '-.','LineWidth', 1.5)
+plot(Xode15s(:,1),Xode15s(:,2), '--','LineWidth', 1.5)
+xlabel("$x_1$",'FontSize',16,'Interpreter','latex')
+ylabel("$x_2$",'FontSize',16,'Interpreter','latex')
+
+
+sgtitle('Dormand-Prince 5(4) with fixed step size, $\mu = 20$','Interpreter','latex','FontSize',20) 
+ 
+
+% add a bit space to the figure
+fig = gcf;
+%fig.Position(3) = fig.Position(3) + 250;
+% add legend
+Lgnd = legend('show');
+Lgnd.Position(1) = 0.449;
+Lgnd.Position(2) = -0.02;
+legend("Dormand-Prince 5(4)","ode45","ode15s",'NumColumns',3,'FontSize',16,'Interpreter','latex');
+
+%% MU = 3, adaptive step size
+h = 0.1;
+t0 = 0;
+mu = 3;
+tend = 4*mu;
+x0 = [1.0; 1.0];
+Atol = 10^(-2);
+Rtol = Atol;
+
+% using the Dormand-Prince 5(4)method
+options = struct('step_control',true, 'initialStepSize',true,'control_type', "PID",'Rtol',Rtol,'Atol',Atol);
+[X1,T1,function_calls7,hs1,rs7] = ODEsolver(@VanPol,[mu],h,t0,tend,x0, "DOPRI54", options);
+hs7 = hs1;
+
+Atol = 10^(-4);
+Rtol = Atol;
+% using the Dormand-Prince 5(4)method
+options = struct('step_control',true, 'initialStepSize',true,'control_type', "PID",'Rtol',Rtol,'Atol',Atol);
+[X2,T2,function_calls8,hs2,rs8] = ODEsolver(@VanPol,[mu],h,t0,tend,x0, "DOPRI54", options);
+hs8 = hs2;
+
+Atol = 10^(-6);
+Rtol = Atol;
+% using the Dormand-Prince 5(4)method
+options = struct('step_control',true, 'initialStepSize',true,'control_type', "PID",'Rtol',Rtol,'Atol',Atol);
+[X3,T3,function_calls9,hs3,rs9] = ODEsolver(@VanPol,[mu],h,t0,tend,x0, "DOPRI54", options);
+hs9 = hs3;
+
+options = odeset('RelTol',0.000001,'AbsTol',0.000001);
+[Tode45,Xode45] = ode45(@VanPol,[t0 tend],x0,options,mu);
+
+[Tode15s,Xode15s]=ode15s(@VanPol,[t0 tend],x0,options,mu);
+
+%
+fig = figure;
+
+subplot(3, 3, 1)
+plot(T1,X1(:,1),'LineWidth', 1.5)
+hold on 
+plot(Tode45,Xode45(:,1), '-.','LineWidth', 1.5)
+plot(Tode15s,Xode15s(:,1), '--','LineWidth', 1.5)
+title('Atol = Rtol = $10^{-2}$','FontSize',16,'Interpreter','latex')
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("$x_1$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 2)
+plot(T2,X2(:,1),'LineWidth', 1.5)
+hold on 
+plot(Tode45,Xode45(:,1), '-.','LineWidth', 1.5)
+plot(Tode15s,Xode15s(:,1), '--','LineWidth', 1.5)
+title('Atol = Rtol = $10^{-4}$','FontSize',16,'Interpreter','latex')
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("$x_1$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 3)
+plot(T3,X3(:,1),'LineWidth', 1.5)
+hold on 
+plot(Tode45,Xode45(:,1), '-.','LineWidth', 1.5)
+plot(Tode15s,Xode15s(:,1), '--','LineWidth', 1.5)
+title('Atol = Rtol = $10^{-6}$','FontSize',16,'Interpreter','latex')
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("$x_1$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 4)
+plot(T1,X1(:,2),'LineWidth', 1.5)
+hold on 
+plot(Tode45,Xode45(:,2), '-.','LineWidth', 1.5)
+plot(Tode15s,Xode15s(:,2), '--','LineWidth', 1.5)
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("$x_2$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 5)
+plot(T2,X2(:,2),'LineWidth', 1.5)
+hold on 
+plot(Tode45,Xode45(:,2), '-.','LineWidth', 1.5)
+plot(Tode15s,Xode15s(:,2), '--','LineWidth', 1.5)
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("$x_2$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 6)
+plot(T3,X3(:,2),'LineWidth', 1.5)
+hold on 
+plot(Tode45,Xode45(:,2), '-.','LineWidth', 1.5)
+plot(Tode15s,Xode15s(:,2), '--','LineWidth', 1.5)
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("$x_2$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 7)
+plot(X1(:,1),X1(:,2),'LineWidth', 1.5)
+hold on 
+plot(Xode45(:,1),Xode45(:,2), '-.','LineWidth', 1.5)
+plot(Xode15s(:,1),Xode15s(:,2), '--','LineWidth', 1.5)
+xlabel("$x_1$",'FontSize',16,'Interpreter','latex')
+ylabel("$x_2$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 8)
+plot(X2(:,1),X2(:,2),'LineWidth', 1.5)
+hold on 
+plot(Xode45(:,1),Xode45(:,2), '-.','LineWidth', 1.5)
+plot(Xode15s(:,1),Xode15s(:,2), '--','LineWidth', 1.5)
+xlabel("$x_1$",'FontSize',16,'Interpreter','latex')
+ylabel("$x_2$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 9)
+plot(X3(:,1),X3(:,2),'LineWidth', 1.5)
+hold on 
+plot(Xode45(:,1),Xode45(:,2), '-.','LineWidth', 1.5)
+plot(Xode15s(:,1),Xode15s(:,2), '--','LineWidth', 1.5)
+xlabel("$x_1$",'FontSize',16,'Interpreter','latex')
+ylabel("$x_2$",'FontSize',16,'Interpreter','latex')
+
+
+sgtitle('Dormand-Prince 5(4) with adaptive step size, $\mu = 3$','Interpreter','latex','FontSize',20) 
+ 
+
+% add a bit space to the figure
+fig = gcf;
+%fig.Position(3) = fig.Position(3) + 250;
+% add legend
+Lgnd = legend('show');
+Lgnd.Position(1) = 0.449;
+Lgnd.Position(2) = -0.02;
+legend("Dormand-Prince 5(4)","ode45","ode15s",'NumColumns',3,'FontSize',16,'Interpreter','latex');
+
+
+% add a bit space to the figure
+fig = gcf;
+%fig.Position(3) = fig.Position(3) + 250;
+% add legend
+Lgnd = legend('show');
+Lgnd.Position(1) = 0.449;
+Lgnd.Position(2) = -0.02;
+legend("Dormand-Prince 5(4)","ode45","ode15s",'NumColumns',3,'FontSize',16,'Interpreter','latex');
+
+
+fig = figure;
+T1 = T1(2:end-1);
+T2 = T2(2:end-1);
+T3 = T3(2:end-1);
+hs1 = hs1(:,1:end-1);
+hs2 = hs2(:,1:end-1);
+hs3 = hs3(:,1:end-1);
+subplot(1, 3, 1)
+semilogy(T1,hs1(1,:),'LineWidth', 1.5)
+hold on
+semilogy(T1(hs1(2,:)>1),hs1(1,hs1(2,:)>1),'x', 'color', 'r','MarkerSize',12)
+title('Atol = Rtol = $10^{-2}$','FontSize',16,'Interpreter','latex')
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("h",'FontSize',16,'Interpreter','latex')
+ylim([10^(-5),10])
+
+subplot(1, 3, 2)
+semilogy(T2,hs2(1,:),'LineWidth', 1.5)
+hold on
+semilogy(T2(hs2(2,:)>1),hs2(1,hs2(2,:)>1),'x', 'color', 'r','MarkerSize',12)
+title('Atol = Rtol = $10^{-4}$','FontSize',16,'Interpreter','latex')
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("h",'FontSize',16,'Interpreter','latex')
+ylim([10^(-5),10])
+
+subplot(1, 3, 3)
+semilogy(T3,hs3(1,:),'LineWidth', 1.5)
+hold on
+semilogy(T3(hs3(2,:)>1),hs3(1,hs3(2,:)>1),'x', 'color', 'r','MarkerSize',12)
+title('Atol = Rtol = $10^{-6}$','FontSize',16,'Interpreter','latex')
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("h",'FontSize',16,'Interpreter','latex')
+ylim([10^(-5),10])
+
+sgtitle('Dormand-Prince 5(4) with adaptive step size, $\mu = 3$','Interpreter','latex','FontSize',20) 
+ 
+
+% add a bit space to the figure
+fig = gcf;
+%fig.Position(3) = fig.Position(3) + 250;
+% add legend
+Lgnd = legend('show');
+Lgnd.Position(1) = 0.449;
+Lgnd.Position(2) = 0;
+legend("Step size","Rejections",'NumColumns',2,'FontSize',16,'Interpreter','latex');
+
+%% MU = 20, adaptive step size
+h = 0.1;
+t0 = 0;
+mu = 20;
+tend = 4*mu;
+x0 = [1.0; 1.0];
+Atol = 10^(-2);
+Rtol = Atol;
+
+% using the Dormand-Prince 5(4)method
+options = struct('step_control',true, 'initialStepSize',true,'control_type', "PID",'Rtol',Rtol,'Atol',Atol);
+[X1,T1,function_calls10,hs1,rs10] = ODEsolver(@VanPol,[mu],h,t0,tend,x0, "DOPRI54", options);
+hs10 = hs1;
+
+Atol = 10^(-4);
+Rtol = Atol;
+% using the Dormand-Prince 5(4)method
+options = struct('step_control',true, 'initialStepSize',true,'control_type', "PID",'Rtol',Rtol,'Atol',Atol);
+[X2,T2,function_calls11,hs2,rs11] = ODEsolver(@VanPol,[mu],h,t0,tend,x0, "DOPRI54", options);
+hs11 = hs2;
+
+Atol = 10^(-6);
+Rtol = Atol;
+% using the Dormand-Prince 5(4)method
+options = struct('step_control',true, 'initialStepSize',true,'control_type', "PID",'Rtol',Rtol,'Atol',Atol);
+[X3,T3,function_calls12,hs3,rs12] = ODEsolver(@VanPol,[mu],h,t0,tend,x0, "DOPRI54", options);
+hs12 = hs3;
+
+options = odeset('RelTol',0.000001,'AbsTol',0.000001);
+[Tode45,Xode45] = ode45(@VanPol,[t0 tend],x0,options,mu);
+
+[Tode15s,Xode15s]=ode15s(@VanPol,[t0 tend],x0,options,mu);
+
+%
+fig = figure;
+
+subplot(3, 3, 1)
+plot(T1,X1(:,1),'LineWidth', 1.5)
+hold on 
+plot(Tode45,Xode45(:,1), '-.','LineWidth', 1.5)
+plot(Tode15s,Xode15s(:,1), '--','LineWidth', 1.5)
+title('Atol = Rtol = $10^{-2}$','FontSize',16,'Interpreter','latex')
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("$x_1$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 2)
+plot(T2,X2(:,1),'LineWidth', 1.5)
+hold on 
+plot(Tode45,Xode45(:,1), '-.','LineWidth', 1.5)
+plot(Tode15s,Xode15s(:,1), '--','LineWidth', 1.5)
+title('Atol = Rtol = $10^{-4}$','FontSize',16,'Interpreter','latex')
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("$x_1$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 3)
+plot(T3,X3(:,1),'LineWidth', 1.5)
+hold on 
+plot(Tode45,Xode45(:,1), '-.','LineWidth', 1.5)
+plot(Tode15s,Xode15s(:,1), '--','LineWidth', 1.5)
+title('Atol = Rtol = $10^{-6}$','FontSize',16,'Interpreter','latex')
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("$x_1$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 4)
+plot(T1,X1(:,2),'LineWidth', 1.5)
+hold on 
+plot(Tode45,Xode45(:,2), '-.','LineWidth', 1.5)
+plot(Tode15s,Xode15s(:,2), '--','LineWidth', 1.5)
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("$x_2$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 5)
+plot(T2,X2(:,2),'LineWidth', 1.5)
+hold on 
+plot(Tode45,Xode45(:,2), '-.','LineWidth', 1.5)
+plot(Tode15s,Xode15s(:,2), '--','LineWidth', 1.5)
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("$x_2$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 6)
+plot(T3,X3(:,2),'LineWidth', 1.5)
+hold on 
+plot(Tode45,Xode45(:,2), '-.','LineWidth', 1.5)
+plot(Tode15s,Xode15s(:,2), '--','LineWidth', 1.5)
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("$x_2$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 7)
+plot(X1(:,1),X1(:,2),'LineWidth', 1.5)
+hold on 
+plot(Xode45(:,1),Xode45(:,2), '-.','LineWidth', 1.5)
+plot(Xode15s(:,1),Xode15s(:,2), '--','LineWidth', 1.5)
+xlabel("$x_1$",'FontSize',16,'Interpreter','latex')
+ylabel("$x_2$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 8)
+plot(X2(:,1),X2(:,2),'LineWidth', 1.5)
+hold on 
+plot(Xode45(:,1),Xode45(:,2), '-.','LineWidth', 1.5)
+plot(Xode15s(:,1),Xode15s(:,2), '--','LineWidth', 1.5)
+xlabel("$x_1$",'FontSize',16,'Interpreter','latex')
+ylabel("$x_2$",'FontSize',16,'Interpreter','latex')
+
+subplot(3, 3, 9)
+plot(X3(:,1),X3(:,2),'LineWidth', 1.5)
+hold on 
+plot(Xode45(:,1),Xode45(:,2), '-.','LineWidth', 1.5)
+plot(Xode15s(:,1),Xode15s(:,2), '--','LineWidth', 1.5)
+xlabel("$x_1$",'FontSize',16,'Interpreter','latex')
+ylabel("$x_2$",'FontSize',16,'Interpreter','latex')
+
+
+sgtitle('Dormand-Prince 5(4) with adaptive step size, $\mu = 20$','Interpreter','latex','FontSize',20) 
+ 
+
+% add a bit space to the figure
+fig = gcf;
+%fig.Position(3) = fig.Position(3) + 250;
+% add legend
+Lgnd = legend('show');
+Lgnd.Position(1) = 0.449;
+Lgnd.Position(2) = -0.02;
+legend("Dormand-Prince 5(4)","ode45","ode15s",'NumColumns',3,'FontSize',16,'Interpreter','latex');
+
+
+fig = figure;
+T1 = T1(2:end-1);
+T2 = T2(2:end-1);
+T3 = T3(2:end-1);
+hs1 = hs1(:,1:end-1);
+hs2 = hs2(:,1:end-1);
+hs3 = hs3(:,1:end-1);
+subplot(1, 3, 1)
+semilogy(T1,hs1(1,:),'LineWidth', 1.5)
+hold on
+semilogy(T1(hs1(2,:)>1),hs1(1,hs1(2,:)>1),'x', 'color', 'r','MarkerSize',12)
+title('Atol = Rtol = $10^{-2}$','FontSize',16,'Interpreter','latex')
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("h",'FontSize',16,'Interpreter','latex')
+ylim([10^(-5),10])
+
+subplot(1, 3, 2)
+semilogy(T2,hs2(1,:),'LineWidth', 1.5)
+hold on
+semilogy(T2(hs2(2,:)>1),hs2(1,hs2(2,:)>1),'x', 'color', 'r','MarkerSize',12)
+title('Atol = Rtol = $10^{-4}$','FontSize',16,'Interpreter','latex')
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("h",'FontSize',16,'Interpreter','latex')
+ylim([10^(-5),10])
+
+subplot(1, 3, 3)
+semilogy(T3,hs3(1,:),'LineWidth', 1.5)
+hold on
+semilogy(T3(hs3(2,:)>1),hs3(1,hs3(2,:)>1),'x', 'color', 'r','MarkerSize',12)
+title('Atol = Rtol = $10^{-6}$','FontSize',16,'Interpreter','latex')
+xlabel("t",'FontSize',16,'Interpreter','latex')
+ylabel("h",'FontSize',16,'Interpreter','latex')
+ylim([10^(-5),10])
+
+sgtitle('Dormand-Prince 5(4) with adaptive step size, $\mu = 20$','Interpreter','latex','FontSize',20) 
+ 
+
+% add a bit space to the figure
+fig = gcf;
+%fig.Position(3) = fig.Position(3) + 250;
+% add legend
+Lgnd = legend('show');
+Lgnd.Position(1) = 0.449;
+Lgnd.Position(2) = 0;
+legend("Step size","Rejections",'NumColumns',2,'FontSize',16,'Interpreter','latex');
+
+
+%% Timing
+
+Stiff = zeros(3,6);
+Stiff(1,1) = rs4;
+Stiff(2,1) = function_calls4;
+Stiff(3,1) = length(hs4);
+
+Stiff(1,2) = rs5;
+Stiff(2,2) = function_calls5;
+Stiff(3,2) = length(hs5);
+
+Stiff(1,3) = rs6;
+Stiff(2,3) = function_calls6;
+Stiff(3,3) = length(hs6);
+
+Stiff(1,4) = rs10;
+Stiff(2,4) = function_calls10;
+Stiff(3,4) = sum(hs10(2,:));
+
+Stiff(1,5) = rs11;
+Stiff(2,5) = function_calls11;
+Stiff(3,5) = sum(hs11(2,:));
+
+Stiff(1,6) = rs12;
+Stiff(2,6) = function_calls12;
+Stiff(3,6) = sum(hs12(2,:));
+
+NonStiff = zeros(3,6);
+
+NonStiff(1,1) = rs111;
+NonStiff(2,1) = function_calls111;
+NonStiff(3,1) = length(hs111);
+
+NonStiff(1,2) = rs22;
+NonStiff(2,2) = function_calls22;
+NonStiff(3,2) = length(hs22);
+
+NonStiff(1,3) = rs33;
+NonStiff(2,3) = function_calls33;
+NonStiff(3,3) = length(hs33);
+
+NonStiff(1,4) = rs7;
+NonStiff(2,4) = function_calls7;
+NonStiff(3,4) = sum(hs7(2,:));
+
+NonStiff(1,5) = rs8;
+NonStiff(2,5) = function_calls8;
+NonStiff(3,5) = sum(hs8(2,:));
+
+NonStiff(1,6) = rs9;
+NonStiff(2,6) = function_calls9;
+NonStiff(3,6) = sum(hs9(2,:));
+
+
+
+
+
+%% CSTR 1D
+method = "DOPRI54";
+options = struct('step_control', true, 'initialStepSize', true,'control_type', "PID");
+optionsOde = odeset('RelTol',1e-6,'AbsTol',1e-6);
+
+min = 60; %[s]
+F = [0.7/min,0.6/min,0.5/min,0.4/min,0.3/min,0.2/min,0.3/min,0.4/min,0.5/min,0.6/min,0.7/min,0.7/min,0.2/min,0.2/min,0.7/min,0.7/min]; %[L/s]
+Tin = 273.65; % [K]
+V = 0.105; % [L]
+beta = -(-560)/(1*4.186);%[mL/min]
+Ca_in = 1.6/2; %[mol/L]
+Cb_in = 2.4/2; %[mol/L]
+
+t0 = 0; 
+tend = 120; 
+h = 1;
+
+X = [];
+Xode45 = [];
+Xode15s = [];
+T = [];
+Fplot = [];
+x0 = Tin;
+x0ode45 = Tin;
+x0ode15s = Tin;
+h_array = [];
+function_calls11 = 0;
+rs11 = 0;
+for i=1:length(F)
+    param = [F(i) Tin V beta Ca_in Cb_in];
+    [X1,T1,function_calls1,hs1,rs1] = ODEsolver(@CSTR1D,param,h,t0,tend,x0, method,options);
+   
+    rs11 = rs11 + rs1;
+    function_calls11 = function_calls11 + function_calls1;
+    [~,X2]=ode45(@CSTR1D,T1,x0ode45,optionsOde, param);
+    [~,X3]=ode15s(@CSTR1D,T1,x0ode15s,optionsOde,param);
+
+    X = [X; X1];
+    Xode45 = [Xode45; X2];
+    Xode15s = [Xode15s; X3];
+
+    T = [T T1];
+    x0 = X1(end);
+    x0ode45 = X2(end);
+    x0ode15s = X3(end);
+    h_array = [h_array hs1(:,1) hs1];
+
+    t0 = T(end); 
+    tend = T(end)+120; 
+    Fplot = [Fplot, repelem(F(i), length(T1))];
+end
+
+
+
+fig = figure('Position', [10 10 1000 800]);
+tend = 120;
+
+subplot(2, 1, 1)
+plot(T/60,X-273.15, 'LineWidth', 1.5)
+hold on 
+plot(T/60,Xode45(:,1)-273.15, '-.','LineWidth', 1.5)
+plot(T/60,Xode15s(:,1)-273.15, '--','LineWidth', 1.5)
+ylabel('T [$^\circ$C]', 'FontSize', 16, 'Interpreter','latex')
+title('1D CSTR',  'FontSize', 20, 'Interpreter','latex')
+grid on
+legend(method,'ODE45','ODE15s','fontsize',12, 'Interpreter','latex')
+hold off
+
+subplot(2, 1, 2)
+%plot([0 repelem((1:(length(F)-1))*tend,2) length(F)*tend]/60, repelem(F,2)*60*1000, 'LineWidth', 1.5)
+plot(T/60, Fplot*60*1000, 'LineWidth', 1.5)
+xlabel('t [min]', 'FontSize',16, 'Interpreter','latex')
+ylabel('F [mL/min]', 'FontSize',16, 'Interpreter','latex')
+ylim([0,1000])
+grid on 
+
+
+fig = figure;
+T1 = T/60;
+hs1 = h_array;
+semilogy(T1,hs1(1,:),'LineWidth', 1.5)
+hold on
+grid on
+semilogy(T1(hs1(2,:)>1),hs1(1,hs1(2,:)>1),'x', 'color', 'r','MarkerSize',12)
+title('Used step sizes','FontSize',16,'Interpreter','latex')
+xlabel("t [min]",'FontSize',16,'Interpreter','latex')
+ylabel("h",'FontSize',16,'Interpreter','latex')
+legend("Step size","Rejections",'NumColumns',2,'FontSize',16,'Interpreter','latex');
+
+
+
+%% CSTR 3D
+method = "DOPRI54";
+Atol = 1e-6;
+Rtol = 1e-6;
+options = struct('step_control', true, 'initialStepSize', false, 'Rtol', Rtol, 'Atol', Atol,'control_type', "PID");
+optionsOde = odeset('RelTol',Rtol,'AbsTol',Atol);
+
+min = 60; %[s]
+F = [0.7/min,0.6/min,0.5/min,0.4/min,0.3/min,0.2/min,0.3/min,0.4/min,0.5/min,0.6/min,0.7/min,0.7/min,0.2/min,0.2/min,0.7/min,0.7/min]; %[L/s]
+Tin = 273.65; % [K]
+V = 0.105; % [L]
+beta = -(-560)/(1*4.186);%[mL/min]
+Ca_in = 1.6/2; %[mol/L]
+Cb_in = 2.4/2; %[mol/L]
+
+t0 = 0; 
+tend = 120; 
+N = 30;
+h = 1;
+
+X = [];
+Ca = [];
+Cb = [];
+Xode45 = [];
+Caode45 = [];
+Cbode45 = [];
+Xode15s = [];
+Caode15s = [];
+Cbode15s = [];
+
+Fplot = [];
+T = [];
+x0 = [Ca_in;Cb_in;Tin];
+x0ode45 = x0;
+x0ode15s = x0;
+
+function_calls11 = 0;
+rs11 = 0;
+h_array = [];
+for i=1:length(F)
+    param = [F(i) Tin V beta Ca_in Cb_in];
+    [X1,T1,function_calls1,hs1,rs1] = ODEsolver(@CSTR3D,param,h,t0,tend,x0, method,options);
+
+    [~,X2]=ode45(@CSTR3D,T1,x0ode45,optionsOde, param);
+    [~,X3]=ode15s(@CSTR3D,T1,x0ode15s,optionsOde,param);
+    
+    rs11 = rs11 + rs1;
+    function_calls11 = function_calls11 + function_calls1;
+    Ca = [Ca; X1(:,1)];
+    Cb = [Cb; X1(:,2)];
+    X = [X; X1(:,3)];
+    
+    Caode45 = [Caode45; X2(:,1)];
+    Cbode45 = [Cbode45; X2(:,2)];
+    Xode45 = [Xode45; X2(:,3)];
+
+    Caode15s = [Caode15s; X3(:,1)];
+    Cbode15s = [Cbode15s; X3(:,2)];
+    Xode15s = [Xode15s; X3(:,3)];
+
+    T = [T T1];
+    h_array = [h_array hs1(:,1) hs1];
+    x0 = X1(end,:);
+    x0ode45 = X2(end,:);
+    x0ode15s = X3(end,:);
+    
+    t0 = T(end); 
+    tend = T(end)+120; 
+    Fplot = [Fplot, repelem(F(i), length(T1))];
+    h = hs1(1,end);
+end
+
+
+fig = figure('Position', [10 10 1000 800]);
+subplot(2, 1, 1)
+plot(T/60,X-273.15, 'LineWidth', 1.5)
+hold on 
+plot(T/60,Xode45(:,1)-273.15, '-.','LineWidth', 1.5)
+plot(T/60,Xode15s(:,1)-273.15, '--','LineWidth', 1.5)
+ylabel('T [$^\circ$C]', 'FontSize', 16, 'Interpreter','latex')
+title('3D CSTR',  'FontSize', 20, 'Interpreter','latex')
+grid on
+legend(method,'ODE45','ODE15s','fontsize',12, 'Interpreter','latex')
+hold off
+
+subplot(2, 1, 2)
+plot(T/60, Fplot*60*1000, 'LineWidth', 1.5)
+xlabel('t [min]', 'FontSize',16, 'Interpreter','latex')
+ylabel('F [mL/min]', 'FontSize',16, 'Interpreter','latex')
+ylim([0,1000])
+grid on 
+
+
+fig = figure('Position', [10 10 1000 800]);
+subplot(2, 1, 1)
+plot(T/60,Ca, 'LineWidth', 1.5)
+hold on
+plot(T/60,Caode45, '-.','LineWidth', 1.5)
+plot(T/60,Caode15s, '-.','LineWidth', 1.5)
+ylabel('$C_A$ [$mol/L$]', 'FontSize', 16, 'Interpreter','latex')
+title('3D CSTR',  'FontSize',16, 'Interpreter','latex')
+legend(method,'ODE45','ODE15s','fontsize',12, 'Interpreter','latex')
+grid on
+
+subplot(2, 1, 2)
+plot(T/60,Cb, 'LineWidth', 1.5)
+hold on
+plot(T/60,Cbode45, '-.','LineWidth', 1.5)
+plot(T/60,Cbode15s, '-.','LineWidth', 1.5)
+ylabel('$C_B$ [$mol/L$]', 'FontSize', 16, 'Interpreter','latex')
+xlabel('t [min]', 'FontSize',16, 'Interpreter','latex')
+legend(method,'ODE45','ODE15s','fontsize',12, 'Interpreter','latex')
+grid on 
+
+
+fig = figure;
+T1 = T/60;
+hs1 = h_array;
+semilogy(T1,hs1(1,:),'LineWidth', 1.5)
+hold on
+grid on
+semilogy(T1(hs1(2,:)>1),hs1(1,hs1(2,:)>1),'x', 'color', 'r','MarkerSize',12)
+title('Used step sizes','FontSize',16,'Interpreter','latex')
+xlabel("t [min]",'FontSize',16,'Interpreter','latex')
+ylabel("h",'FontSize',16,'Interpreter','latex')
+legend("Step size","Rejections",'NumColumns',2,'Location','southwest','FontSize',16,'Interpreter','latex');
+
+

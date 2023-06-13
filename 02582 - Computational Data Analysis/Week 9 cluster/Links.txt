@@ -1,0 +1,8 @@
+Silhouette validation:
+https://www.youtube.com/watch?v=AtxQ0rvdQIA
+
+Hierarchical clustering:
+https://www.youtube.com/watch?v=QXOkPvFM6NU
+
+Gaussian mix models:
+https://www.youtube.com/watch?v=EWd1xRkyEog

@@ -1,0 +1,6 @@
+Lotka Volterra:
+https://math.stackexchange.com/questions/75725/nondimensionalization-of-predator-prey-model
+https://www.youtube.com/watch?v=oaIj6ZR2uIA
+
+Logistic map:
+http://math.colgate.edu/~wweckesser/math312Spring05/handouts/MoreNondim.pdf

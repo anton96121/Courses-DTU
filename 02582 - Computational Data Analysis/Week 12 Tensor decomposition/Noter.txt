@@ -1,0 +1,26 @@
+You are not gatentueed a global optimum with alternating least squares and therefore it is often
+beneficial to run the algorithm a couple of times with different initilizations.
+
+If loadings are looking alot like each other we can have problem with many local optima. 
+This is called degeneracy. How ever if for one the dimensions the loadings are the same but
+for another they are different this heuristic can be coded into the tucker because you can have
+3 components for dimension 2 and only 1 for dimension 1 f.eks.
+
+These tensor decomposition models are very effective if we have domain knowlegde about the number of components
+in each dimension. This can be coded into the model and then the specific loadings and scores which are unkown
+can be optimized for.
+
+However because tucker maybe has a lower number of components in one dimensions than f.eks. enzymes in the
+ experiment we can not seperate them into components describing enzym 1, components describing enzym 2,...
+as we could for parafac. (Det siger han i hvert fald i videoen men jeg tænker man vel bare kan have de unikke 
+componenter i tucker mens i dimensionen hvor de er ens har de bare den samme komponent?)
+
+You can think about these models as domain supervised unsupervised models
+
+uniqueness is locked for the PARAFAC by the super diagonal core tensor as the solution to PCA is also unique. 
+For the tucker we do not have this same uniqueness because the degree of freedom is not locked. The core tensor 
+can be what ever. This makes different rotations equal.
+
+Because alternating least squares do not guarentee a global optimal we can evaluate a PARAFAC solution by use of
+ Core consistency diagonal. This measures how close my model is to a super diagonal core tensor because this 
+would be the global solution.

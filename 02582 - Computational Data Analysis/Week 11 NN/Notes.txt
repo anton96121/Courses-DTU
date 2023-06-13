@@ -1,0 +1,10 @@
+Prevent overfitting:
+By use of sampling techniques as SMOTE or AdaSyn. In this course it is called data augmentation
+
+Activation functions in autoencoders:
+https://kstathou.github.io/posts/2018/03/autoencoders-part-1/
+
+Difference between autoencoder and PCA:
+https://stats.stackexchange.com/questions/389314/writing-pca-as-a-special-kind-of-auto-encoder
+https://stats.stackexchange.com/questions/120080/whatre-the-differences-between-pca-and-autoencoder
+

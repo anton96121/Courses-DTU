@@ -1,0 +1,6 @@
+Playliste med unconstrained og active set methods for constrained. Denne er rigtig
+god til første halvdel af kurset og hvis man ikke har haft 02610 Optimization and Data Fitting:
+ https://www.youtube.com/playlist?list=PLh464gFUoJWOmBYla3zbZbc4nv2AXez6X
+
+Kanal med meget forskelligt indenfor optimering:
+ https://www.youtube.com/c/MichelBierlaire/featured

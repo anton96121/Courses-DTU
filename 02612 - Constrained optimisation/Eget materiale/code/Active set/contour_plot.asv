@@ -1,0 +1,51 @@
+H = [2 0; 0 2];
+g = [-2 ; -5];
+A = [1 -1 -1 1 0;-2 -2 2 0 1];
+b = [-2; -6; -2; 0; 0];
+
+x0 = [0;0];
+W0 = [3 5];
+[x,lambda,feasibility, working_set_save,x_save] = primalActiveSetMethod(H,g,A,b,x0,W0);
+contour(H,g,A,b,x_save,'Path of the primal active-set method of initialization: x0=[0,0], W0=(4,5)')
+
+%[x,lambda, feasibility,working_set_save,x_save,p_save,v_save,r_save,lambda_save,step_save] = dualActiveSetMethod(H,g,A,b);
+
+
+%title('Path of the primal active-set method of initialization: x0=[0,0], W0=(4,5)')
+%title('Path of the dual active-set method')
+
+%%
+function [] = contour(H, g, A, b, path, plot_title, range)
+if nargin<7
+    range = 10;
+end
+A = A';
+x1=-range:0.05:range;
+x2=-range:0.05:range;
+[X1 X2] = meshgrid(x1,x2);
+
+q=(X1-1).^2+(X2-2.5).^2;
+
+contourf(X1,X2,q,linspace(0,30,20),'ShowText','on')
+axis([-1 4.5 -1 4])
+colorbar;
+
+yc1=x1/2+1;
+yc2=-x1/2+3;
+yc3=x1/2-1;
+xc4=zeros(size(x1));
+yc5=zeros(size(x2));
+hold on
+    fill([x1 x1(end) x1(1)],[yc1 x2(end) x2(end)],[0.7 0.7 0.7],'facealpha',0.3, 'facecolor', 'black')
+    fill([x1 x1(end) x1(1)],[yc2 x2(end) x2(end)],[0.7 0.7 0.7],'facealpha',0.3, 'facecolor', 'black')
+    fill([x1 x1(end) x1(1)],[yc3 x2(1) x2(1)],[0.7 0.7 0.7],'facealpha',0.3, 'facecolor', 'black')
+    fill([xc4 x1(1) x1(1)],[x2 x2(end) x2(1)],[0.7 0.7 0.7],'facealpha',0.3, 'facecolor', 'black')
+    fill([x1 x1(end) x1(1)],[yc5 x2(1) x2(1)],[0.7 0.7 0.7],'facealpha',0.3, 'facecolor', 'black')
+
+options =  optimset('Display', 'off');
+X1 = quadprog(H,g,-A,-b,[],[],[],[],[],options);
+hold on
+h = plot(X1(1),X1(2),'ro', 'MarkerSize', 6);
+plot(path(1,:),path(2,:),'-x')
+title(plot_title)
+end

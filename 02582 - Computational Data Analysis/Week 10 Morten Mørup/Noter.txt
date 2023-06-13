@@ -1,0 +1,20 @@
+Rotationen af X=AS=AQ^-1 QS =ÄS er ikke unik. A er mikrofoner og S er talere og tid. Disse 'talere' 
+kan være korrelerede hvor f.eks. PCA antager de er uaffhængige. Derfor er dette ikke bare lige sådan
+at genskabe S fra X.
+
+NMF
+ finder charakteristika ved dem der indegår i data og så ud fra disse legoklodser kan man genskabe folk. 
+probs med algo er at man kan dividere med nul og her tilføjer man kontant i tæller og nævner af grad.
+Man kan blive stuck hvis step length er nul. Her fikser man det ved at boote lidt og hvi det ikke er min
+så vil den fortsætte ellers vil den bare gå tilbage. Lidt som ADAM.
+
+Archtypal analysis.
+ regularized convex hull ish. Grundet curse of dim i højere dimensioner vil convex hull indeholde 
+alle datapunkter og derfor vil det ikke være optimalt. Archtypal finder det bedste wrap af data givet k punkter.
+Altså trækker man arketyper ud af data. Dette er extremer i data men ikke outliers
+
+ICA:
+Forsøger at genskabe ikke normale komponenter af signalet. 
+
+Sparse coding:
+Lidt som SPCA

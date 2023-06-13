@@ -1,0 +1,8 @@
+http://gregorygundersen.com/blog/
+https://tlienart.github.io/
+
+Bayesian inference with probabilistic programming
+https://turing.ml/dev/
+
+MCMC demo mm.
+https://chi-feng.github.io/mcmc-demo/app.html

@@ -1,0 +1,2 @@
+Possion log likelihood:
+https://math.stackexchange.com/questions/2399613/how-to-derive-the-likelihood-and-loglikelihood-of-the-poisson-distribution
