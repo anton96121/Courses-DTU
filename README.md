@@ -12,7 +12,7 @@ This repository primarily contains all the courses I have taken at DTU during my
 * 02612 - Constrained Optimisation
 * 02686 - Scientific Computing for Differential Equations
 * 02953 - Convex Optimization
-* 42136 - Large scale optimization using decomposition
+* 42136 - Large Scale Optimization using Decomposition
 
 Further I have also had the following special courses and projects:
 * S01 Numerical Methods for SDEs and Levy Processes
