@@ -2,7 +2,7 @@
 This repository primarily contains all the courses I have taken at DTU during my Masters studies. The courses are:
 * 01125 - Fundamental Topological Concepts and Metric Spaces
 * 01617 - Introduction to Dynamical Systems
-* 02407 - Stochastic processes - Probability 2
+* 02407 - Stochastic Processes - Probability 2
 * 02424 - Advanced Data Analysis and Statistical Modelling
 * 02425 - Diffusions and Stochastic Differential Equations
 * 02427 - Advanced Time Series Analysis
